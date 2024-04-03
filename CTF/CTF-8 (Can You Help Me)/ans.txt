@@ -1,6 +1,2 @@
 CTF 8
-flag: 
-
-THE RUSSIAN TERRORISTS ARE THE ONES WHO STARTED THIS, THEY ARE THE KEY. PLEASE YOU MUST EXTRACT ME
-
-tool used: https://morsecode.world/international/decoder/audio-decoder-adaptive.html
+flag: THANKYOUFORSAVINGMETHEFLAGISMOSCOW
