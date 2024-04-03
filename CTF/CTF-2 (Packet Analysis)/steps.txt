@@ -1,0 +1,8 @@
+i used wireshark tool to be able to trace the packets
+then i found that most of the data is encrypted
+so any hope will come from an http request
+i searched and tried to export any file within the response
+i found an encrypted file called %2f containing the flag
+i decrypted it usind ROT13 and ROT18
+pending which one we will take
+i guess ROT18
