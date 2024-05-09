@@ -20,14 +20,14 @@ def find_primitive_root(q):
         if is_primitive_root(alpha, q):
             return alpha
 
-def generate_keys(q, p):
+def generate_keys(q, alpha):
     Xa = random.randint(1, q - 1)
-    Ya = pow(p, Xa, q)
+    Ya = pow(alpha, Xa, q)
     PublicKey = Ya
     PrivateKey = Xa
     return PublicKey, PrivateKey
 
 q = 71
-p = find_primitive_root(q)
+alpha = find_primitive_root(q)
 
-PublicKey, PrivateKey = generate_keys(q, p)
+PublicKey, PrivateKey = generate_keys(q, alpha)
