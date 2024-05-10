@@ -12,7 +12,7 @@ def binary_to_text(binary_data):
     return text
 
 def shift(binary_data, i):
-    shifted_data = binary_data[i:] + binary_data[0]
+    shifted_data = binary_data[i % len(binary_data):] + binary_data[:i % len(binary_data)]
     return shifted_data
 
 file_name = 'bits.txt'
