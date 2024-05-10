@@ -11,14 +11,15 @@ def binary_to_text(binary_data):
     text = ''.join(chr(int(binary_data[i:i+8], 2)) for i in range(0, len(binary_data), 8))
     return text
 
-def one_time_shift(binary_data):
-    shifted_data = binary_data[1:] + binary_data[0]
+def shift(binary_data, i):
+    shifted_data = binary_data[i:] + binary_data[0]
     return shifted_data
 
 file_name = 'bits.txt'
 original_data = read_file(file_name)
 binary_data = text_to_binary(original_data)
-shifted_data = one_time_shift(binary_data)
-modified_text = binary_to_text(shifted_data)
-print("Modified Text:", modified_text)
 
+for i in range(len(original_data)):
+    shifted_data = shift(binary_data, i)
+    modified_text = binary_to_text(shifted_data)
+    print("Modified text: ", modified_text, " with circular shift:", i, '\n')
