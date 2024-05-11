@@ -11,10 +11,8 @@ import sys
 SERVER_PORT = 54321  # Define your server port
 
 def get_user_input(prompt):
-    try:
-        return input(prompt)
-    except KeyboardInterrupt:
-        return None
+    return input(prompt)
+
 
 def read_parameters():
     with open("parameters.txt", "r") as file:
@@ -70,7 +68,6 @@ def sign_message(message, public_key, private_key):
     q, alpha, _ = public_key
     
     h = int(hashlib.sha1(str(message).encode()).hexdigest(), 16)
-    # h = int(hashlib.sha1(str(message).encode()), 10)
     h = adjust_number(int(h), 0, q - 1)
     Xa = private_key
     k = generate_random_k(q)    
@@ -82,7 +79,6 @@ def sign_message(message, public_key, private_key):
 def check_signature(message, signature, public_key):
     q, alpha, Ya = public_key
     C1, C2 = signature
-    # h = int(hashlib.sha1(str(message).encode()).hexdigest(), 16)
     h = int(hashlib.sha1(str(message).encode()).hexdigest(), 16)
     h = adjust_number(int(h), 0, q -1)
     h = pow(h, 1, q)
@@ -132,6 +128,7 @@ def receive_messages(client_socket, aes_key):
             print("Received Ciphered: ", cipher)
             plaintext = decrypt(cipher.decode(), aes_key)
             print("Received Plaintext:", plaintext)
+            print("Sender:")
 
 def act_as_server():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
@@ -143,9 +140,8 @@ def act_as_server():
         conn, addr = server_socket.accept()
         with conn:
             print("Connected by", addr)
-            # Implement logic for sending and receiving messages
-            # Implement logic for sending and receiving messages
-                            #Diffie Hellman
+
+            #Diffie Hellman
             q_DH = q_param
             alpha_DH = alpha_param
             PublicKey_DH, PrivateKey_DH = generate_keys_diffie(q_DH, alpha_DH)
@@ -195,7 +191,7 @@ def act_as_server():
 
             while True:
                 # Input from user
-                message = get_user_input("Alice: ")
+                message = get_user_input("Sender: ")
                 if message is not None:
                     cipher = encrypt(message, aes_key)
                     print("Encrypted Message to send from Alice: ", cipher)
@@ -258,7 +254,7 @@ def act_as_client():
 
             while True:
                 # Input from user
-                message = get_user_input("Bob: ")
+                message = get_user_input("Sender: ")
                 if message is not None:
                     encrypted_message = encrypt(message, aes_key)
                     print("Encrypted Message to send from Bob: ", encrypted_message)
