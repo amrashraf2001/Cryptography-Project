@@ -1,5 +1,11 @@
 import random
 import hashlib
+import socket
+import base64
+from Crypto.Cipher import AES
+import os
+
+SERVER_PORT = 54321  # Define your server port
 
 def gcd(a,b):
     while b!=0:
@@ -56,11 +62,34 @@ def check_signature(message, signature, public_key):
     V2 = pow(alpha, h, q)
     return V1 == V2
 
-import socket
+def generate_aes_key(shared_key):
+    sha256 = hashlib.sha256()
+    sha256.update(str(shared_key).encode())
+    aes_key = sha256.digest()[:32]  # Take the first 32 bytes for a 256-bit key
+    return aes_key
 
+def pad(data):
+    # Pad the data to be a multiple of AES block size (16 bytes)
+    padding_len = 16 - (len(data) % 16)
+    return data + bytes([padding_len] * padding_len)
 
-SERVER_PORT = 54321  # Define your server port
+def unpad(data):
+    # Unpad the data
+    padding_len = data[-1]
+    return data[:-padding_len]
 
+def encrypt(data, shared_key):
+    key = generate_aes_key(shared_key)
+    cipher = AES.new(key, AES.MODE_ECB)
+    padded_data = pad(data.encode())
+    ct = cipher.encrypt(padded_data)
+    return base64.b64encode(ct).decode('utf-8')
+
+def decrypt(ct, shared_key):
+    key = generate_aes_key(shared_key)
+    cipher = AES.new(key, AES.MODE_ECB)
+    padded_data = cipher.decrypt(base64.b64decode(ct))
+    return unpad(padded_data).decode('utf-8')
 
 def act_as_server():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
@@ -98,7 +127,7 @@ def act_as_server():
             C1_C2_Yb_Bob = conn.recv(1024).decode()
             print("send from Bob:", C1_C2_Yb_Bob)
             if(C1_C2_Yb_Bob == "exit"):
-                exit
+                return
 
             C1_Bob, C2_Bob, PublicKey_DH_Bob = C1_C2_Yb_Bob.strip("()").split(", ")
             q_G_Bob, alpha_G_Bob, Yb_Bob = PublicKey_Gamal_Bob.strip("()").split(", ")
@@ -110,14 +139,22 @@ def act_as_server():
             else:   
                 print("Signature is not valid")
                 conn.sendall("exit".encode())
-                exit  
+                return
 
+            K = pow(int(PublicKey_DH_Bob), PrivateKey_DH, q_DH)
+            print("K:", K)
+            aes_key = generate_aes_key(K)
+            print("AES Key:", aes_key)
 
             while True:
                 message = input("Alice: ")
-                conn.sendall(message.encode())
+                cipher = encrypt(message, aes_key)
+                print("Encrypted Message to send from alice : ", cipher)
+                conn.sendall(cipher.encode())
                 data = conn.recv(1024)
-                print("Bob:", data.decode())
+                print("Cipher Recived from bob : ",data)
+                plaintext = decrypt(data.decode(), aes_key)
+                print("Bob sent:", plaintext)
 
 def act_as_client():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
@@ -152,7 +189,7 @@ def act_as_client():
             else:   
                 print("Signature is not valid")
                 client_socket.sendall("exit".encode())
-                exit
+                return
             
             C1, C2 = sign_message(PublicKey_DH, PublicKey_Gamal, PrivateKey_Gamal)
             temp = (C1, C2, PublicKey_DH)
@@ -162,13 +199,22 @@ def act_as_client():
             C1_C2_Yb_Alice = client_socket.recv(1024).decode()
             print("send from Alice:", C1_C2_Yb_Alice)
             if(C1_C2_Yb_Alice == "exit"):
-                exit
+                return
+
+            K = pow(int(PublicKey_DH_Alice), PrivateKey_DH, q_DH)
+            print("K:", K)
+            aes_key = generate_aes_key(K)
+            print("AES Key:", aes_key)
 
             while True:
-                data = client_socket.recv(1024)
-                print("Server:", data.decode())
-                message = input("Client: ")
-                client_socket.sendall(message.encode())
+                cipher = client_socket.recv(1024)
+                print("Bob Recived : ",cipher)
+                plain = decrypt(cipher.decode(), aes_key)
+                print("Alice sent:", plain)
+                message = input("Bob: ")
+                encrypted_message = encrypt(message, aes_key)
+                print("Encrypted Message to send from bob : ", encrypted_message)
+                client_socket.sendall(encrypted_message.encode())
         except ConnectionRefusedError:
             print("No server found. Please start another instance to connect.")
 
@@ -181,27 +227,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# #for diffie hellman
-# q_DH = 71
-# alpha_DH = 7
-# PublicKey_DH, PrivateKey_DH = generate_keys_diffie(q_DH, alpha_DH)
-
-# #Gamal
-# q_Gamal = 71
-# alpha_Gamal = 7
-# PublicKey_Gamal, PrivateKey_Gamal = generate_keys_gamal(q_Gamal, alpha_Gamal)
-
-#sockets for gamal public key
-
-#C1, C2 = sign_message(PublicKey_DH, PublicKey_Gamal, PrivateKey_Gamal)
-
-#sockets for DH public after sign
-
-# valid = check_signature(PublicKey_DH, (C1, C2), PublicKey_Gamal)
-# if valid:
-#     print("Signature is valid")
-# else:   
-#     print("Signature is not valid")
-#     exit
-
