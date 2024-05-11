@@ -1,11 +1,20 @@
 import random
 import hashlib
 import socket
+import threading
 import base64
 from Crypto.Cipher import AES
 import os
+import select
+import sys
 
 SERVER_PORT = 54321  # Define your server port
+
+def get_user_input(prompt):
+    try:
+        return input(prompt)
+    except KeyboardInterrupt:
+        return None
 
 def read_parameters():
     with open("parameters.txt", "r") as file:
@@ -114,6 +123,16 @@ def decrypt(ct, shared_key):
 
 q_param, alpha_param = read_parameters()
 
+def receive_messages(client_socket, aes_key):
+    while True:
+        if client_socket in select.select([client_socket], [], [], 0)[0]:
+            cipher = client_socket.recv(1024)
+            if not cipher:
+                break
+            print("Received Ciphered: ", cipher)
+            plaintext = decrypt(cipher.decode(), aes_key)
+            print("Received Plaintext:", plaintext)
+
 def act_as_server():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
         # server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Allow reuse of the port
@@ -169,15 +188,18 @@ def act_as_server():
             aes_key = generate_aes_key(K)
             print("AES Key:", aes_key)
 
+            # Start a thread to receive messages
+            receive_thread = threading.Thread(target=receive_messages, args=(conn, aes_key))
+            receive_thread.daemon = True  # Set the thread as a daemon so it exits when the main thread exits
+            receive_thread.start()
+
             while True:
-                message = input("Alice: ")
-                cipher = encrypt(message, aes_key)
-                print("Encrypted Message to send from alice : ", cipher)
-                conn.sendall(cipher.encode())
-                data = conn.recv(1024)
-                print("Cipher Recived from bob : ",data)
-                plaintext = decrypt(data.decode(), aes_key)
-                print("Bob sent:", plaintext)
+                # Input from user
+                message = get_user_input("Alice: ")
+                if message is not None:
+                    cipher = encrypt(message, aes_key)
+                    print("Encrypted Message to send from Alice: ", cipher)
+                    conn.sendall(cipher.encode())
 
 def act_as_client():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
@@ -229,15 +251,19 @@ def act_as_client():
             aes_key = generate_aes_key(K)
             print("AES Key:", aes_key)
 
+            # Start a thread to receive messages
+            receive_thread = threading.Thread(target=receive_messages, args=(client_socket, aes_key))
+            receive_thread.daemon = True  # Set the thread as a daemon so it exits when the main thread exits
+            receive_thread.start()
+
             while True:
-                cipher = client_socket.recv(1024)
-                print("Bob Recived : ",cipher)
-                plain = decrypt(cipher.decode(), aes_key)
-                print("Alice sent:", plain)
-                message = input("Bob: ")
-                encrypted_message = encrypt(message, aes_key)
-                print("Encrypted Message to send from bob : ", encrypted_message)
-                client_socket.sendall(encrypted_message.encode())
+                # Input from user
+                message = get_user_input("Bob: ")
+                if message is not None:
+                    encrypted_message = encrypt(message, aes_key)
+                    print("Encrypted Message to send from Bob: ", encrypted_message)
+                    client_socket.sendall(encrypted_message.encode())
+                
         except ConnectionRefusedError:
             print("No server found. Please start another instance to connect.")
 
