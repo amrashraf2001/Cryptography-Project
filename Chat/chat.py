@@ -7,6 +7,11 @@ import os
 
 SERVER_PORT = 54321  # Define your server port
 
+def read_parameters():
+    with open("parameters.txt", "r") as file:
+        q, alpha = map(int, file.read().split())
+    return q, alpha
+
 def gcd(a,b):
     while b!=0:
         a,b=b,a%b
@@ -91,6 +96,8 @@ def decrypt(ct, shared_key):
     padded_data = cipher.decrypt(base64.b64decode(ct))
     return unpad(padded_data).decode('utf-8')
 
+q_param, alpha_param = read_parameters()
+
 def act_as_server():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
         # server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Allow reuse of the port
@@ -104,13 +111,13 @@ def act_as_server():
             # Implement logic for sending and receiving messages
             # Implement logic for sending and receiving messages
                             #Diffie Hellman
-            q_DH = 71
-            alpha_DH = 7
+            q_DH = q_param
+            alpha_DH = alpha_param
             PublicKey_DH, PrivateKey_DH = generate_keys_diffie(q_DH, alpha_DH)
 
             #Gamal
-            q_Gamal = 71
-            alpha_Gamal = 7
+            q_Gamal = q_param
+            alpha_Gamal = alpha_param
             PublicKey_Gamal, PrivateKey_Gamal = generate_keys_gamal(q_Gamal, alpha_Gamal)
             
             print("Alice send:", PublicKey_Gamal)
@@ -163,13 +170,13 @@ def act_as_client():
             print("Running as client, connected to server")
             # Implement logic for sending and receiving messages
             #Diffie Hellman
-            q_DH = 71
-            alpha_DH = 7
+            q_DH = q_param
+            alpha_DH = alpha_param
             PublicKey_DH, PrivateKey_DH = generate_keys_diffie(q_DH, alpha_DH)
 
             #Gamal
-            q_Gamal = 71
-            alpha_Gamal = 7
+            q_Gamal = q_param
+            alpha_Gamal = alpha_param
             PublicKey_Gamal, PrivateKey_Gamal = generate_keys_gamal(q_Gamal, alpha_Gamal)
 
             PublicKey_Gamal_Alice = client_socket.recv(1024).decode()
