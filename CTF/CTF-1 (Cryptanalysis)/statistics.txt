@@ -1,0 +1,57 @@
+Character 'E' appears 419 times.
+
+Character 'C' appears 261 times.
+
+Character 'R' appears 347 times.
+
+Character 'A' appears 111 times.
+
+Character 'I' appears 683 times.
+
+Character ' ' appears 1226 times.
+
+Character 'Y' appears 154 times.
+
+Character 'V' appears 322 times.
+
+Character 'T' appears 91 times.
+
+Character 'S' appears 114 times.
+
+Character 'M' appears 343 times.
+
+Character 'K' appears 518 times.
+
+Character 'P' appears 436 times.
+
+Character 'Q' appears 40 times.
+
+Character 'B' appears 281 times.
+
+Character 'W' appears 89 times.
+
+Character 'O' appears 257 times.
+
+Character 'N' appears 116 times.
+
+Character 'H' appears 361 times.
+
+Character '
+' appears 123 times.
+
+Character 'L' appears 66 times.
+
+Character 'G' appears 87 times.
+
+Character 'X' appears 131 times.
+
+Character 'U' appears 83 times.
+
+Character 'D' appears 5 times.
+
+Character 'Z' appears 3 times.
+
+Character 'J' appears 3 times.
+
+Character 'F' appears 2 times.
+
