@@ -4,4 +4,3 @@ open two terminals
 write in both terminals -> Python chat.py
 
 
-alice starts to send, then they take turns on sending the messages
