@@ -39,28 +39,44 @@ def generate_random_k(q):
 
 def adjust_number(number, lower_bound, upper_bound):
     if number < lower_bound or number > upper_bound:
-        lsb = 1 if number < lower_bound else 0
-        adjusted_number = (number & ~(1 << 0)) | (lsb << 0)
-        return adjusted_number
+        if(len(bin(number)) < len(bin(upper_bound))):
+            binary_number = int(number) & int(upper_bound)
+            if (binary_number == upper_bound):
+                return (binary_number - 2 )
+            elif (binary_number == upper_bound - 1 ):
+                return (binary_number - 1 )
+            else:
+                return binary_number
+        else:
+            binary_number = int(number) & int(upper_bound)
+            if (binary_number == upper_bound):
+                return (binary_number - 2 )
+            elif (binary_number == upper_bound - 1 ):
+                return (binary_number - 1 )
+            else:
+                return binary_number
     return number
 
 def sign_message(message, public_key, private_key):
     q, alpha, _ = public_key
     
     h = int(hashlib.sha1(str(message).encode()).hexdigest(), 16)
-
-    adjust_number(int(h), 0, q - 1)
-
+    # h = int(hashlib.sha1(str(message).encode()), 10)
+    h = adjust_number(int(h), 0, q - 1)
     Xa = private_key
     k = generate_random_k(q)    
     C1 = pow(alpha, k, q)
     C2 = (h - Xa * C1) * pow(k, -1, q - 1)
+    C2 = pow(C2, 1, q - 1)
     return C1, C2
 
 def check_signature(message, signature, public_key):
     q, alpha, Ya = public_key
     C1, C2 = signature
+    # h = int(hashlib.sha1(str(message).encode()).hexdigest(), 16)
     h = int(hashlib.sha1(str(message).encode()).hexdigest(), 16)
+    h = adjust_number(int(h), 0, q -1)
+    h = pow(h, 1, q)
     P1 = pow(Ya, C1, q)
     P2 = pow(C1, C2, q)
     V1 = P1 * P2 % q
