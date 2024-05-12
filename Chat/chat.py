@@ -24,6 +24,19 @@ def gcd(a,b):
         a,b=b,a%b
     return a
 
+def modinv(e,phi):
+    x1,x2=0,1
+    y1,y2=1,0
+    while phi>0:
+        q= e // phi
+        r= e%phi
+        x=x2-q*x1
+        y=y2-q*y1
+        e,phi,x2,x1,y2,y1=phi,r,x1,x,y1,y
+
+    return x2
+
+
 def generate_keys_diffie(q, alpha):
     Xa = random.randint(1, q - 1)
     Ya = pow(alpha, Xa, q)
@@ -72,7 +85,8 @@ def sign_message(message, public_key, private_key):
     Xa = private_key
     k = generate_random_k(q)    
     C1 = pow(alpha, k, q)
-    C2 = (h - Xa * C1) * pow(k, -1, q - 1)
+    C2 = modinv(k,q-1)
+    C2 = C2 * pow(h - Xa * C1,1,q-1)
     C2 = pow(C2, 1, q - 1)
     return C1, C2
 
